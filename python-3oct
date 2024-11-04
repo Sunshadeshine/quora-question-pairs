@@ -1,0 +1,38 @@
+# # 1.write a prgm to sort a dictonary by key
+# sample_dict = {
+#     'banana': 3,
+#     'apple': 2,
+#     'orange': 5,
+#     'mango': 1
+# }
+# sorted_dict = dict(sorted(sample_dict.items()))
+# print("Sorted dictionary by keys:", sorted_dict)
+
+
+# # wap to remove dupliactes from the dictnary
+# sample_dict = {
+#     'apple': 2,
+#     'banana': 3,
+#     'orange': 2,
+#     'mango': 1,
+#     'grape': 3
+# }
+# unique_dict = {}
+# for key, value in sample_dict.items():
+#     if value not in unique_dict.values():
+#         unique_dict[key] = value
+# print("Dictionary after removing duplicates:", unique_dict)
+
+# # WAP lo find maximum and minimune value of a dicionery
+# sample_dict = {
+#     'apple': 20,
+#     'banana': 35,
+#     'orange': 12,
+#     'mango': 50
+# }
+# max_value = max(sample_dict.values())
+# min_value = min(sample_dict.values())
+# print("Maximum value:", max_value)
+# print("Minimum value:", min_value)
+
+#8.wap to create a list and use atleast any five functisn that is appped , delete,insert,for manipulating the list
