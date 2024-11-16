@@ -1,105 +1,151 @@
 import streamlit as st
 import helper
 import pickle
+from streamlit_extras.switch_page_button import switch_page
+from time import sleep
 
 # Load model
 model = pickle.load(open('model.pkl', 'rb'))
 
-# Apply custom styles using st.markdown for CSS
+# Initialize session state for question history
+if "history" not in st.session_state:
+    st.session_state.history = []
+
+# Apply custom styles
 st.markdown("""
     <style>
-        /* Background color */
+        /* Background and Theme */
         .stApp {
-            background-color: #f7f7f7;
+            background: linear-gradient(135deg, #2a5298, #1e3c72);
+            color: white;
+            font-family: 'Inter', sans-serif;
         }
 
-        /* Title styling */
+        /* Title */
         h1 {
-            color: #f64c72;
-            font-size: 3em;
-            font-weight: bold;
+            font-size: 3.8em;
+            font-weight: 900;
             text-align: center;
-            margin-top: -50px;
+            color: #ffffff;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
         }
 
-        /* Input box styling */
-        input {
-            background-color: #fffcf5;
-            border-radius: 10px;
-            padding: 10px;
-            border: 1px solid #ccc;
+        /* Description */
+        p {
+            font-size: 1.2em;
+            text-align: center;
+            margin-bottom: 30px;
+            color: #ffffff;
         }
 
-        /* Button styling */
-        button {
-            background-color: #ff686b;
-            border: none;
+        /* Input Boxes */
+        .stTextInput > div > input {
+            height: 55px;
+            font-size: 1.5em;
             border-radius: 12px;
-            color: white;
-            padding: 10px 20px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 20px;
+            padding: 15px;
         }
 
-        /* Footer styling */
-        .footer {
+        /* Buttons */
+        .stButton button {
+            background: linear-gradient(90deg, #ff6a00, #ee0979);
+            color: white;
+            font-size: 1.2em;
+            font-weight: bold;
+            border: none;
+            border-radius: 25px;
+            padding: 15px 25px;
+            margin: 20px 0;
+        }
+
+        .stButton button:hover {
+            transform: scale(1.1);
+            box-shadow: 0px 4px 10px rgba(255, 105, 135, 0.4);
+        }
+
+        /* Result Box */
+        .result-box {
             text-align: center;
-            font-size: 14px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
             padding: 20px;
-            background-color: #ff686b;
-            color: white;
-            border-radius: 10px;
-            margin-top: 50px;
+            font-size: 1.5em;
+            margin-top: 30px;
+            animation: fadeIn 1s ease-in-out;
         }
 
-        .footer a {
-            color: #ffe75e;
-            font-weight: bold;
+        /* Fade-in Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Floating Button */
+        .floating-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: linear-gradient(90deg, #ff6a00, #ee0979);
+            color: white;
+            padding: 15px;
+            border-radius: 50%;
+            font-size: 1.5em;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            z-index: 1000;
+        }
+
+        .floating-btn:hover {
+            transform: scale(1.1);
         }
     </style>
 """, unsafe_allow_html=True)
 
-# Set the title and description
-st.markdown("<h1>🔍 Duplicate Question Pair Detector</h1>", unsafe_allow_html=True)
-st.markdown("""
-    <p style="text-align:center; font-size:18px; color:#444;">
-        Enter two questions below, and we'll check if they are duplicates using machine learning.
-    </p>
-""", unsafe_allow_html=True)
+# Title
+st.markdown("<h1>🔍 AI-Powered Question Similarity Checker</h1>", unsafe_allow_html=True)
+st.markdown("<p>Quickly detect question similarities with accuracy and ease.</p>", unsafe_allow_html=True)
 
-# Input areas for the questions with some spacing
+# Input areas for questions
 q1 = st.text_input('❓ Enter Question 1', placeholder="Type your first question here...")
 q2 = st.text_input('❓ Enter Question 2', placeholder="Type your second question here...")
 
-# Center the button
-st.markdown("<div style='text-align:center;'>", unsafe_allow_html=True)
+# Analyze button with a loading spinner
+if st.button('🚀 Analyze'):
+    if q1 and q2:
+        with st.spinner('Analyzing questions...'):
+            sleep(1.5)  # Simulate processing time
+            query = helper.query_point_creator(q1, q2)
+            result = model.predict(query)[0]
 
-# Button to trigger the model prediction
-if st.button('🚀 Check for Duplicates'):
-    query = helper.query_point_creator(q1, q2)
-    result = model.predict(query)[0]
+        # Store to history
+        st.session_state.history.append((q1, q2, result))
 
-    # Display result with better formatting and colors
-    if result:
-        st.markdown("""
-            <div style="text-align:center;">
-                <h2 style='color:#2ecc71;'>✅ These questions are duplicates.</h2>
-            </div>
-        """, unsafe_allow_html=True)
+        # Display the result
+        if result:
+            st.markdown("""
+                <div class="result-box">
+                    ✅ <strong>These questions are duplicates.</strong>
+                </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.markdown("""
+                <div class="result-box">
+                    ❌ <strong>These questions are not duplicates.</strong>
+                </div>
+            """, unsafe_allow_html=True)
     else:
-        st.markdown("""
-            <div style="text-align:center;">
-                <h2 style='color:#e74c3c;'>❌ These questions are not duplicates.</h2>
-            </div>
-        """, unsafe_allow_html=True)
+        st.error("Please enter both questions before analyzing.")
 
-st.markdown("</div>", unsafe_allow_html=True)
+# Question history
+if st.session_state.history:
+    st.markdown("### Recently Analyzed Questions")
+    for idx, (question1, question2, result) in enumerate(st.session_state.history[-5:]):
+        result_text = "✅ Duplicate" if result else "❌ Not Duplicate"
+        st.write(f"{idx+1}. *Q1:* {question1} | *Q2:* {question2} → {result_text}")
 
-# Adding footer with links and space
-# st.markdown("""
-#     <div class="footer">
-#         Made with ❤️ using <a href="https://streamlit.io/" target="_blank">Streamlit</a>
-#     </div>
-# """, unsafe_allow_html=True)
+# Floating Help Button
+st.markdown("""
+    <div class="floating-btn" onclick="window.open('https://support.yourcompany.com', '_blank')">
+        ❔
+    </div>
+""", unsafe_allow_html=True)
